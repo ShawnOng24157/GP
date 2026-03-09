@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F5 Student Survey Analysis Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .chart-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .chart-subtitle {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            margin-bottom: 15px;
+        }
+        
+        .explanation {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            font-size: 0.95em;
+            color: #444;
+            line-height: 1.6;
+        }
+        
+        .key-stat {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .key-stat-value {
+            font-size: 2em;
+            margin: 10px 0;
+        }
+        
+        .insights-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin-top: 30px;
+        }
+        
+        .insights-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .insight-item {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .insight-item h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .insight-item p {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 F5 Student Survey Analysis</h1>
+            <p class="subtitle">Chung Ling Private High School | Perceptions on Degree Importance & Future Preparation</p>
+            <p class="subtitle" style="margin-top: 10px; opacity: 0.8;">60 Students Surveyed | F5M & F5P Classes</p>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Chart 1: Gender Distribution -->
+            <div class="chart-container">
+                <h3 class="chart-title">📌 Gender Distribution</h3>
+                <p class="chart-subtitle">Sample composition by gender</p>
+                <div class="chart-wrapper">
+                    <canvas id="genderChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> The survey has 65% male and 35% female respondents. Males represent two-thirds of the sample, which is important when analyzing gender-based patterns in academic time allocation and career preparation.
+                </div>
+            </div>
+
+            <!-- Chart 2: Degree Importance Score Distribution -->
+            <div class="chart-container">
+                <h3 class="chart-title">🎓 Importance of Degree (Scale 1-10)</h3>
+                <p class="chart-subtitle">Student ratings on degree importance for life success</p>
+                <div class="chart-wrapper">
+                    <canvas id="degreeChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> Most students rate degree importance highly, with 28.3% rating it 10/10 and 28.3% rating it 7/10. This shows strong consensus that degrees matter for career success, though some variation exists.
+                </div>
+            </div>
+
+            <!-- Chart 3: Time Focus Distribution -->
+            <div class="chart-container">
+                <h3 class="chart-title">⏱️ Time Allocation Focus</h3>
+                <p class="chart-subtitle">Where students spend more time: academics vs co-curriculars</p>
+                <div class="chart-wrapper">
+                    <canvas id="timeChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> 66.7% of students focus more on academics, while 33.3% prioritize co-curriculars. This 2:1 ratio suggests academics remain the dominant focus for most F5 students.
+                </div>
+            </div>
+
+            <!-- Chart 4: Class Representation -->
+            <div class="chart-container">
+                <h3 class="chart-title">🏫 Class Distribution</h3>
+                <p class="chart-subtitle">F5M vs F5P student participation</p>
+                <div class="chart-wrapper">
+                    <canvas id="classChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> F5M has 56.7% of respondents (34 students) while F5P has 43.3% (26 students). This roughly reflects class sizes, with a good representation from both streams.
+                </div>
+            </div>
+
+            <!-- Chart 5: Average Weekly Hours -->
+            <div class="chart-container">
+                <h3 class="chart-title">📚 Average Weekly Time Investment</h3>
+                <p class="chart-subtitle">Hours per week (excluding school hours)</p>
+                <div class="chart-wrapper">
+                    <canvas id="hoursChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> Students spend an average of 13.3 hours/week on academics vs 9.4 hours on co-curriculars. This 1.4:1 ratio confirms the time allocation survey data and shows academics gets 58% of outside-school effort.
+                </div>
+            </div>
+
+            <!-- Chart 6: Readiness for Future -->
+            <div class="chart-container">
+                <h3 class="chart-title">🚀 Perceived Readiness to Enter Society</h3>
+                <p class="chart-subtitle">Student confidence in future preparedness</p>
+                <div class="chart-wrapper">
+                    <canvas id="preparedChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> Only 16.7% feel "Yes" prepared, while 63.3% answered "No". This reveals a significant confidence gap - most F5 students feel underprepared for entering society despite their academic focus.
+                </div>
+            </div>
+
+            <!-- Chart 7: Future Preparation Strategy -->
+            <div class="chart-container">
+                <h3 class="chart-title">🎯 Which Better Prepares for Future?</h3>
+                <p class="chart-subtitle">Academics vs Co-curriculars for career readiness</p>
+                <div class="chart-wrapper">
+                    <canvas id="strategyChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> 66.7% believe academics better prepares them, while 30% believe co-curriculars matter more. Interestingly, only 3.3% think both are equally important, suggesting most students see these as competing priorities rather than complementary.
+                </div>
+            </div>
+
+            <!-- Chart 8: Time Allocation by Gender -->
+            <div class="chart-container">
+                <h3 class="chart-title">👥 Weekly Hours by Gender</h3>
+                <p class="chart-subtitle">Academics vs co-curricular time (hours/week)</p>
+                <div class="chart-wrapper">
+                    <canvas id="genderTimeChart"></canvas>
+                </div>
+                <div class="explanation">
+                    <strong>Key Finding:</strong> Female students invest significantly more time in academics (18.2 hrs/week) compared to males (10.7 hrs/week) - a 70% difference! Meanwhile, time on co-curriculars is similar between genders (8.2F vs 10.0M), revealing a potential gender-based intensity divide in academic pursuit.
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-section">
+            <h2 class="insights-title">💡 Key Insights & Explanations</h2>
+            
+            <div class="insight-item">
+                <h3>1. Strong Consensus on Degree Value, Yet Low Preparedness</h3>
+                <p>The survey reveals a critical paradox: 86% of students rate degree importance as 6+/10, yet 63% feel unprepared to enter society. This suggests students understand credentials matter but feel their current education (academic-heavy as it is) doesn't translate to real-world readiness. The gap between academic achievement and practical competence is the core concern.</p>
+            </div>
+
+            <div class="insight-item">
+                <h3>2. Academic Bias in Time & Strategy Selection</h3>
+                <p>Students are heavily biased toward academics: 2/3 spend more time on it, invest 58% more hours weekly, and 67% believe it better prepares for the future. However, this academic focus hasn't translated to confidence. This could indicate: (a) academics alone insufficient for career readiness, (b) students believe academics matter but doubt their execution, or (c) co-curriculars develop soft skills academics don't measure.</p>
+            </div>
+
+            <div class="insight-item">
+                <h3>3. Gender-Based Academic Intensity Disparity</h3>
+                <p>Female students invest 70% more time in academics than males (18.2 vs 10.7 hrs/week), despite co-curricular involvement being nearly equal. This raises questions: Do females face greater academic pressure? Do they perceive degree importance differently? Or do they approach university preparation more intensively? Further investigation into motivation would be valuable.</p>
+            </div>
+
+            <div class="insight-item">
+                <h3>4. False Choice: Academics vs Co-Curriculars</h3>
+                <p>Only 3.3% see academics and co-curriculars as equally important for future prep. Most students mentally compete these, choosing one over the other. Yet employers increasingly value both technical knowledge (academics) and soft skills, teamwork, leadership, and resilience (co-curriculars). The curriculum should emphasize integration, not competition.</p>
+            </div>
+
+            <div class="insight-item">
+                <h3>5. Lack of Transition Support Signals</h3>
+                <p>63% felt "No" prepared for society - note the binary nature of responses. The presence of hedging answers ("Not really," "Fairly," "No yet") for only 15% suggests uncertainty and lack of clarity about expectations. Students may need: clearer pathways to competence, exposure to real-world scenarios, mentorship, or skills training beyond academics.</p>
+            </div>
+
+            <div class="insight-item">
+                <h3>6. Opportunity for Holistic Development</h3>
+                <p>The data suggests F5 students are academically focused but feel unprepared. This isn't a contradiction—it highlights an opportunity. By reframing education to: (1) integrate soft skills training into academics, (2) position co-curriculars as complementary (not competing), and (3) provide clearer real-world application bridges, schools can improve both academic rigor AND readiness for society.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>Survey Analysis | Data-driven insights for educational improvement | 2024</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart 1: Gender Distribution
+        const genderCtx = document.getElementById('genderChart').getContext('2d');
+        new Chart(genderCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Male (39)', 'Female (21)'],
+                datasets: [{
+                    data: [39, 21],
+                    backgroundColor: ['#667eea', '#f093fb'],
+                    borderColor: ['#667eea', '#f093fb'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12 }, padding: 20 }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Degree Importance
+        const degreeCtx = document.getElementById('degreeChart').getContext('2d');
+        new Chart(degreeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7', '8', '8.5', '9', '10'],
+                datasets: [{
+                    label: 'Number of Students',
+                    data: [1, 1, 2, 2, 6, 8, 11, 10, 1, 6, 11],
+                    backgroundColor: ['#ffb3ba', '#ffb3ba', '#ffcccb', '#ffcccb', '#ffd6d6', '#fff5e1', '#ffffcc', '#c7ffcc', '#b3ffb3', '#a8e6a1', '#667eea'],
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 12 }
+                }
+            }
+        });
+
+        // Chart 3: Time Focus
+        const timeCtx = document.getElementById('timeChart').getContext('2d');
+        new Chart(timeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Academics (40)', 'Co-curriculars (20)'],
+                datasets: [{
+                    data: [40, 20],
+                    backgroundColor: ['#667eea', '#764ba2'],
+                    borderColor: ['#667eea', '#764ba2'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12 }, padding: 20 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ' (' + ((context.parsed / 60) * 100).toFixed(1) + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 4: Class Distribution
+        const classCtx = document.getElementById('classChart').getContext('2d');
+        new Chart(classCtx, {
+            type: 'bar',
+            data: {
+                labels: ['F5M', 'F5P'],
+                datasets: [{
+                    label: 'Number of Students',
+                    data: [34, 26],
+                    backgroundColor: ['#667eea', '#f093fb'],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 40 }
+                }
+            }
+        });
+
+        // Chart 5: Average Weekly Hours
+        const hoursCtx = document.getElementById('hoursChart').getContext('2d');
+        new Chart(hoursCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Academics', 'Co-curriculars'],
+                datasets: [{
+                    label: 'Hours per Week',
+                    data: [13.3, 9.4],
+                    backgroundColor: ['#667eea', '#764ba2'],
+                    borderRadius: 8,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 16 }
+                }
+            }
+        });
+
+        // Chart 6: Prepared for Society
+        const preparedCtx = document.getElementById('preparedChart').getContext('2d');
+        new Chart(preparedCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Yes', 'Fairly', 'Not really', 'No yet', 'No'],
+                datasets: [{
+                    label: 'Number of Students',
+                    data: [10, 4, 5, 3, 38],
+                    backgroundColor: ['#2ecc71', '#f1c40f', '#e67e22', '#e74c3c', '#c0392b'],
+                    borderRadius: 5,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'x',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 40 }
+                }
+            }
+        });
+
+        // Chart 7: Future Preparation Strategy
+        const strategyCtx = document.getElementById('strategyChart').getContext('2d');
+        new Chart(strategyCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Academics (40)', 'Co-curriculars (18)', 'Both (2)'],
+                datasets: [{
+                    data: [40, 18, 2],
+                    backgroundColor: ['#667eea', '#764ba2', '#f093fb'],
+                    borderColor: ['#667eea', '#764ba2', '#f093fb'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12 }, padding: 20 }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ' (' + ((context.parsed / 60) * 100).toFixed(1) + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 8: Gender Time Allocation
+        const genderTimeCtx = document.getElementById('genderTimeChart').getContext('2d');
+        new Chart(genderTimeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Female', 'Male'],
+                datasets: [
+                    {
+                        label: 'Academics (hrs/week)',
+                        data: [18.2, 10.7],
+                        backgroundColor: '#667eea'
+                    },
+                    {
+                        label: 'Co-curriculars (hrs/week)',
+                        data: [8.2, 10.0],
+                        backgroundColor: '#764ba2'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { size: 12 }, padding: 20 }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 22 }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
